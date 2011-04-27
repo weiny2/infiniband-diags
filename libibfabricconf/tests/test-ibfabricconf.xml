@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE ibfabric>
+
+<ibfabric name="test fabric" schemaVersion="1.0">
+	<property name="type">QSFP</property>
+	<chassis name="test chassis" model="QLogic_9240"></chassis>
+	<subfabric speed="QDR" width="1x">
+		<property name="color">blue</property>
+		<chassis name="test chassis2" model="QLogic_9240"></chassis>
+		<linklist name="test switch 3" speed="DDR">
+			<port num="1"><r_port>1</r_port><r_node>DDR node 1</r_node></port>
+		</linklist>
+	</subfabric>
+	<linklist name="test switch 2">
+		<property name="length">2m</property>
+		<port num="1"><r_port>1</r_port><r_node>node 1</r_node></port>
+		<port num="2"><r_port>2</r_port><r_node>node 2</r_node></port>
+		<port num="48"><r_port>48</r_port><r_node>test switch 2</r_node></port>
+	</linklist>
+	<linklist name="test switch 2">
+		<port num="1"><r_port>1</r_port><r_node>node 3</r_node></port>
+		<port num="2"><r_port>1</r_port><r_node>node 4</r_node></port>
+	</linklist>
+</ibfabric>

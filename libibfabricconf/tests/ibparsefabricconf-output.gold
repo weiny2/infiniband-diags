@@ -1,0 +1,9 @@
+Fabric Name: fabric
+"test switch 2" p:  1  <==(width=MAX Width speed=MAX Speed type=QSFP)==>  p:  1 "node 3"
+"test switch 2" p:  2  <==(width=MAX Width speed=MAX Speed type=QSFP)==>  p:  1 "node 4"
+"test switch 2" p: 48  <==(width=MAX Width speed=MAX Speed length=2m type=QSFP)==>  p: 48 "test switch 2"
+"test switch 2" p: 48  <==(width=MAX Width speed=MAX Speed length=2m type=QSFP)==>  p: 48 "test switch 2"
+"test switch 3" p:  1  <==(width=MAX Width speed=DDR type=QSFP color=blue)==>  p:  1 "DDR node 1"
+"node 3" p:  1  <==(width=MAX Width speed=MAX Speed type=QSFP)==>  p:  1 "test switch 2"
+"node 4" p:  1  <==(width=MAX Width speed=MAX Speed type=QSFP)==>  p:  2 "test switch 2"
+"DDR node 1" p:  1  <==(width=MAX Width speed=DDR type=QSFP color=blue)==>  p:  1 "test switch 3"
