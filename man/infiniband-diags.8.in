@@ -153,7 +153,72 @@ perform the lookup.
 0x0008f104004119d0 "SW4  (Rack  3) ISR9024 Voltaire 9024D"
 .br
 
-.SH Utilities list
+
+.SH IB FABRIC CONFIG
+
+\fBibfabricconf.xml\fR is an XML file which describes all the connections in a
+fabric.  The 2 dtd's are provided ibfabric.dtd and ibchassismap.dtd.  Over all
+the config file provides the following features:
+
+.TP
+Config entry's are "name" based.  There are no GUID's, LIDs, etc.  As such
+misnamed nodes (possibly supplied by the conf file "ib-node-name-map" or by
+miss-programmed node description fields) will show up as errors.  The reasoning
+for this is iblinkinfo is a tool used by System Administrators to debug
+problems in a known network layout.  GUID's can change as bad hardware is
+swapped out.  Therefore a logical view of the fabric is much more useful and
+presented in ibfabricconf.xml
+
+.TP
+Ports which are not specified are assumed to be down.
+Checks during a fabric scan will report active links on those ports as errors.
+
+.TP
+Default properties are "MAX" speed and "MAX" width.  This instructs the
+checking program to compare the active speed/width against the supported
+speed/width and flag an error if the active speed/wdith is not equal to the max
+supported.
+
+.TP
+Properties are inherited from parent to child in the XML file.  For example if
+the entire fabric is to be 4X/QDR then only the fabric XML tag needs to be
+specified as 'speed="QDR" width="4X"'.  However, any link/node tag can specify
+properties which overrides itself and it's children.
+
+.TP
+Ports which are listed a second time will over ride the previous entry.
+This is very useful for overriding the internal links of the large
+switches after using the "chassis" tag.  On the other hand caution should
+be used in generating your config files.
+
+.TP
+Common "chassis" configs can be included using the "chassis" tag.  This makes
+defining the internal connections of large switches easier.  Using a chassis
+tag will automatically create all the internal links for those switches.  The
+name of the chassis will be prepended to the internal switches found in the
+chassis.  For example:
+
+<chassis name="ibcore1" model="QLogic_9240"></chassis>
+
+results to the following "linklist" names:
+
+"ibcore1 SP1a", "ibcore1 SP1b", ...
+
+"ibcore1 L1a", "ibcore1 L2a", "ibcore1 Leaf 3 Chip A", ...
+
+Internal switch names can be changed if the names used in the config file
+are not sufficient.
+
+(See @IBDIAG_CONFIG_PATH@/chassis_fabricconfs
+for a list of chassis which have alredy been defined.  Submitions of
+additional chasis config files are always welcome.)
+
+.TP
+A "subfabric" tag allows an easier method to specify the properties for a group
+of entries.
+
+
+.SH UTILITIES LIST
 
 .TP
 \fBBasic fabric conectivity\fR
