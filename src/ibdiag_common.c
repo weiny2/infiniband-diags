@@ -686,7 +686,7 @@ int resolve_portid_str(char *ca_name, uint8_t ca_port, ib_portid_t * portid,
 	return -1;
 }
 
-static unsigned int get_max(unsigned int num)
+unsigned int get_max(unsigned int num)
 {
 	unsigned r = 0;		// r will be lg(num)
 
