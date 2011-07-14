@@ -142,6 +142,17 @@ src_ibqueryerrors_SOURCES = src/ibqueryerrors.c
 src_ibqueryerrors_LDFLAGS = -L$(top_builddir)/libibnetdisc -libnetdisc
 endif
 
+if HAVE_XML
+src_iblinkinfo_SOURCES = src/iblinkinfo.c src/checkfabric.c src/checkfabric.h
+src_iblinkinfo_CFLAGS = $(GLIB_CFLAGS)
+src_iblinkinfo_LDFLAGS = -losmcomp -libmad \
+	-L$(top_builddir)/libibnetdisc -libnetdisc \
+	-L$(top_builddir)/libibfabricconf -libfabricconf $(GLIB_LIBS)
+else
+src_iblinkinfo_SOURCES = src/iblinkinfo.c
+src_iblinkinfo_LDFLAGS = -L$(top_builddir)/libibnetdisc -libnetdisc
+endif
+
 BUILT_SOURCES = ibdiag_version
 ibdiag_version:
 	if [ -x $(top_srcdir)/gen_ver.sh ] ; then \
