@@ -264,7 +264,8 @@ of entries.
 .SH Backwards compatibility scripts
 
 The following scripts have been identified as redundant and/or lower performing
-as compared to the above scripts.  They are provided as legacy scripts.
+as compared to the above scripts.  They are provided as legacy scripts when
+--enable-compat-utils is specified at build time.
 
 ibcheckerrors, ibclearcounters, ibclearerrors, ibdatacounters
 ibchecknet, ibchecknode, ibcheckport, ibcheckportstate,
