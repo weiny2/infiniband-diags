@@ -16,7 +16,8 @@ sbin_PROGRAMS = src/ibaddr src/ibnetdiscover src/ibping src/ibportstate \
 	        src/saquery src/vendstat src/iblinkinfo \
 		src/ibqueryerrors src/ibcacheedit src/ibccquery \
 		src/ibccconfig \
-		src/dump_fts
+		src/dump_fts \
+		src/ibqueryerrorstest
 
 if ENABLE_TEST_UTILS
 sbin_PROGRAMS += src/ibsendtrap src/mcm_rereg_test
@@ -117,6 +118,18 @@ src_ibccconfig_SOURCES = src/ibccconfig.c
 src_iblinkinfo_LDFLAGS = -L$(top_builddir)/libibnetdisc -libnetdisc
 src_ibqueryerrors_SOURCES = src/ibqueryerrors.c
 src_ibqueryerrors_LDFLAGS = -L$(top_builddir)/libibnetdisc -libnetdisc
+
+# hack in this one test function
+src_ibqueryerrorstest_SOURCES = src/ibqueryerrors-test.c \
+				src/checkfabric.c src/checkfabric.h \
+				src/ud_qp.c src/ud_qp.h
+#src_ibqueryerrorstest_CFLAGS = $(GLIB_CFLAGS)
+src_ibqueryerrorstest_LDFLAGS = -losmcomp -libmad \
+	-L$(top_builddir)/libibnetdisc -libnetdisc \
+	-L$(top_builddir)/libibfabricconf -libfabricconf \
+	-libverbs
+#$(GLIB_LIBS)
+
 src_ibcacheedit_SOURCES = src/ibcacheedit.c
 src_ibcacheedit_LDFLAGS = -L$(top_builddir)/libibnetdisc -libnetdisc
 
