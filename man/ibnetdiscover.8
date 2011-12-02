@@ -24,6 +24,9 @@ unless a topology file is specified.
 .SH OPTIONS
 
 .PP
+See infiniband-diags(8) for common options.
+
+.PP
 .TP
 \fB\-l\fR, \fB\-\-list\fR
 List of connected nodes
@@ -84,45 +87,6 @@ GUID, width, speed, and NodeDescription).
 \fB\-m\fR, \fB\-\-max_hops\fR
 Report max hops discovered.
 
-.SH COMMON OPTIONS
-
-Most OpenIB diagnostics take the following common flags. The exact list of
-supported flags per utility can be found in the usage message and can be shown
-using the util_name -h syntax.
-
-# Debugging flags
-.PP
-\-d      raise the IB debugging level.
-        May be used several times (-ddd or -d -d -d).
-.PP
-\-e      show send and receive errors (timeouts and others)
-.PP
-\-h      show the usage message
-.PP
-\-v      increase the application verbosity level.
-        May be used several times (-vv or -v -v -v)
-.PP
-\-V      show the version info.
-
-# Other common flags:
-.PP
-\-C <ca_name>    use the specified ca_name.
-.PP
-\-P <ca_port>    use the specified ca_port.
-.PP
-\-t <timeout_ms> override the default timeout for the solicited mads.
-
-Multiple CA/Multiple Port Support
-
-When no IB device or port is specified, the port to use is selected
-by the following criteria:
-.PP
-1. the first port that is ACTIVE.
-.PP
-2. if not found, the first port that is UP (physical link up).
-
-If a port and/or CA name is specified, the user request is
-attempted to be fulfilled, and will fail if it is not possible.
 
 .SH TOPOLOGY FILE FORMAT
 The topology file format is human readable and largely intuitive.

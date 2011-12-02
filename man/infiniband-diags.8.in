@@ -46,8 +46,10 @@ using "<util_name> -h".
 
 .TP
 \fB# Addressing Flags\fR
+
+.TP 2
 .PP
-\-D      use the directed route specified.
+\fB\-D\fR      use the directed route specified.
 .br
 		Examples:
 .br
@@ -55,51 +57,84 @@ using "<util_name> -h".
 .br
 		"0,1,2,1,4"	# out via port 1, then 2, ...
 
+.TP 2
 .PP
-\-G <guid>     use the PortGuid specified.
+\fB\-G <guid>\fR     use the PortGuid specified.
+.TP 2
 .PP
-\-s <smlid>     use 'smlid' as the target lid for SA queries.
+\fB\-s <smlid>\fR     use <smlid> as the target lid for SA queries.
 
 .TP
 \fB# Local HCA/port flags:\fR
+
+.TP 2
 .PP
-\-C <ca_name>    use the specified ca_name.
+\fB\-C <ca_name>\fR    use the specified ca_name.
+.TP 2
 .PP
-\-P <ca_port>    use the specified ca_port.
+\fB\-P <ca_port>\fR    use the specified ca_port.
+
+Multiple CA/Multiple Port Support
+
+When no IB device or port is specified, the port to use is selected
+by the following criteria:
+.TP 2
+.PP
+1. the first port that is ACTIVE.
+.TP 2
+.PP
+2. if not found, the first port that is UP (physical link up).
+
+If a port and/or CA name is specified, the user request is
+attempted to be fulfilled, and will fail if it is not possible.
 
 .TP
 \fB# Debugging flags\fR
+
+.TP 2
 .PP
-\-t <timeout_ms> override the default timeout for the solicited mads.
+\fB\-t <timeout_ms>\fR override the default timeout for the solicited mads.
+.TP 2
 .PP
-\-d      raise the IB debugging level.
+\fB\-d\fR      raise the IB debugging level.
         May be used several times (-ddd or -d -d -d).
+.TP 2
 .PP
-\-e      show send and receive errors (timeouts and others)
+\fB\-e\fR      show send and receive errors (timeouts and others)
+.TP 2
 .PP
-\-h      show the usage message
+\fB\-h\fR      show the usage message
+.TP 2
 .PP
-\-v      increase the application verbosity level.
+\fB\-v\fR      increase the application verbosity level.
         May be used several times (-vv or -v -v -v)
+.TP 2
 .PP
-\-V      show the version info.
+\fB\-V\fR      show the version info.
 
 .TP
 \fB# Configuration flags\fR
+
+.TP 2
 .PP
-\-\-config \-z  <config_file>
+\fB\-\-config\fR, \fB\-z\fR  <config_file>
         Specify alternate config file.
         Default: @IBDIAG_CONFIG_PATH@/ibdiag.conf
 
-.SH FILES
+.SH COMMON FILES
 
-@IBDIAG_CONFIG_PATH@/ibdiag.conf
+.TP
+\fBGLOBAL CONFIG\fR
+
+.br
+\fB@IBDIAG_CONFIG_PATH@/ibdiag.conf\fR
 
 A global config file is provided to set some of the common options for all
 tools.  See supplied config file for details.
 
 
-.SH NODE NAME MAP FILE FORMAT
+.TP
+\fBNODE NAME MAP FILE FORMAT\fR
 Most utilities use the optional node name map file supported by libosmcomp to
 specify user friendly names for nodes in the output.  Node GUIDs are used to
 perform the lookup.
@@ -153,7 +188,7 @@ perform the lookup.
 0x0008f104004119d0 "SW4  (Rack  3) ISR9024 Voltaire 9024D"
 .br
 
-.SH Utilities list
+.SH UTILITIES LIST
 
 .TP
 \fBBasic fabric conectivity\fR
