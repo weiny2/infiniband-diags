@@ -47,6 +47,8 @@ extern "C" {
 #define IB_LINK_SPEED_ACTIVE_2_5		1
 #define IB_LINK_SPEED_ACTIVE_5			2
 #define IB_LINK_SPEED_ACTIVE_10			4
+#define IB_LINK_SPEED_EXT_ACTIVE_14		1
+#define IB_LINK_SPEED_EXT_ACTIVE_25		2
 
 #ifdef __cplusplus
 }

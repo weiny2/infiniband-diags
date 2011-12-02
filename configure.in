@@ -218,6 +218,7 @@ AC_CONFIG_FILES([\
 	libibnetdisc/Makefile \
 	libibfabricconf/Makefile \
 	libibfabricconf/include/infiniband/ibfabricconf.h \
+	libibfabricconf/man/ibparsefabricconf.8 \
 	man/iblinkinfo.8 \
 ])
 AC_OUTPUT

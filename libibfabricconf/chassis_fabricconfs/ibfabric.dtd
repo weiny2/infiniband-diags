@@ -1,0 +1,17 @@
+<!ELEMENT fabric (property*, linklist+)>
+<!ATTLIST fabric
+	name CDATA #REQUIRED
+	speed (MAX|SDR|DDR|QDR|FDR10|FDR|EDR) #IMPLIED
+	width (MAX|1x|1X|4x|4X|8x|8X|12x|12X) #IMPLIED>
+
+<!ELEMENT linklist (property*, port+)>
+<!ATTLIST linklist name CDATA #REQUIRED>
+
+<!ELEMENT port (property*, r_port, r_node)>
+<!ATTLIST port num CDATA #REQUIRED>
+
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property name CDATA #REQUIRED>
+
+<!ELEMENT r_port (#PCDATA)>
+<!ELEMENT r_node (#PCDATA)>

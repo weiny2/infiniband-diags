@@ -62,6 +62,12 @@ char *dump_linkspeed_compat(uint8_t speed)
 	case IB_LINK_SPEED_ACTIVE_10:
 		return ("10.0 Gbps");
 		break;
+	case IB_LINK_SPEED_EXT_ACTIVE_14:
+		return ("14.0 Gbps");
+		break;
+	case IB_LINK_SPEED_EXT_ACTIVE_25:
+		return ("25.0 Gbps");
+		break;
 	}
 	return ("???");
 }
@@ -372,8 +378,9 @@ add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_str,
 static int
 parse_properties(xmlNode *node, ibfc_prop_t *prop)
 {
-	int rc = 0;
-	xmlAttrPtr attr = NULL;
+	int         rc = 0;
+	xmlAttrPtr  attr = NULL;
+	xmlNode    *cur = NULL;
 
 	for(attr = node->properties; NULL != attr; attr = attr->next)
 	{
@@ -398,6 +405,11 @@ parse_properties(xmlNode *node, ibfc_prop_t *prop)
 				prop->speed = IB_LINK_SPEED_ACTIVE_5;
 			if (strcmp(value, "QDR") == 0)
 				prop->speed = IB_LINK_SPEED_ACTIVE_10;
+			/* what about FDR10 */
+			if (strcmp(value, "FDR") == 0)
+				prop->speed = IB_LINK_SPEED_EXT_ACTIVE_14;
+			if (strcmp(value, "EDR") == 0)
+				prop->speed = IB_LINK_SPEED_EXT_ACTIVE_25;
 
 			continue;
 		}
@@ -418,11 +430,29 @@ parse_properties(xmlNode *node, ibfc_prop_t *prop)
 
 			continue;
 		}
+	}
 
-		/* process user defined */
-		rc = add_named_prop(prop, name, value);
-		if (rc)
-			break;
+	/* process user propertied */
+	for (cur = node->children;
+	     cur;
+	     cur = cur->next) {
+		if (cur->type == XML_ELEMENT_NODE &&
+		    strcmp((char*)cur->name, "property") == 0) {
+			/* parse out the "name" attribute */
+			for(attr = cur->properties; NULL != attr; attr = attr->next)
+			{
+				char *attr_name = (char *)attr->name;
+				char *prop_name = (char *)attr->children->content;
+				if (strcmp((char*)attr_name, "name") == 0) {
+					name = prop_name;
+					value = (char *)xmlNodeGetContent(cur);
+					break;
+				}
+			}
+			rc = add_named_prop(prop, name, value);
+			if (rc)
+				break;
+		}
 	}
 
 	return (rc);

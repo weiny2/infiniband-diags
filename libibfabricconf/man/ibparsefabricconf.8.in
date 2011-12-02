@@ -1,4 +1,4 @@
-.TH IBPARSEFABRICCONF 8 "Sept 29, 2010" "Pragmatic Infiniband Utilities" "Infiniband Diagnostics"
+.TH IBPARSEFABRICCONF 8 "Sept 29, 2010" "OpenIB" "OpenIB Diagnostics"
 
 .SH NAME
 ibparsefabricconf \- parse fabricconf file
@@ -17,7 +17,7 @@ If port is specified further limit the output to that single node/port.
 .PP
 .TP
 \fB\-config, \-c <ibfabricconf>\fR
-Specify an alternate config file (default: /usr/local/etc/pragmaticIB/ibfabricconf.xml)
+Specify an alternate config file (default: @IBDIAG_CONFIG_PATH@/ibfabricconf.xml)
 
 .TP
 \fB\-\-warn_dup, \-w\fR

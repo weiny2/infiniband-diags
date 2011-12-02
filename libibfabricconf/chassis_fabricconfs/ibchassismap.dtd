@@ -1,0 +1,11 @@
+<!ELEMENT chassismap (linklist+)>
+<!ATTLIST chassismap model CDATA #REQUIRED>
+
+<!ELEMENT linklist (port+)>
+<!ATTLIST linklist position CDATA #REQUIRED>
+
+<!ELEMENT port (r_port, r_node)>
+<!ATTLIST port num CDATA #REQUIRED>
+
+<!ELEMENT r_port (#PCDATA)>
+<!ELEMENT r_node (#PCDATA)>

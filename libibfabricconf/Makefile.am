@@ -50,5 +50,7 @@ install-exec-hook:
 	for file in $(top_builddir)/libibfabricconf/chassis_fabricconfs/*.xml; do \
 		$(top_srcdir)/config/install-sh -m 644 $$file $(DESTDIR)/$(sysconfdir)/infiniband-diags/chassis_fabricconfs; \
 	done
-
+	for file in $(top_builddir)/libibfabricconf/chassis_fabricconfs/*.dtd; do \
+		$(top_srcdir)/config/install-sh -m 644 $$file $(DESTDIR)/$(sysconfdir)/infiniband-diags/chassis_fabricconfs; \
+	done
 
