@@ -766,3 +766,81 @@ check_fdr10_active:
 			   IB_MLNX_EXT_PORT_LINK_SPEED_ACTIVE_F) & FDR10) == 0)
 		snprintf(speed_msg, msg_size, "Could be FDR10");
 }
+
+/**
+ * given a port from libibnetdisc extract
+ *
+ * PortInfo:LinkSpeedSupported
+ * PortInfo:LinkSpeedEnabled
+ * PortInfo:LinkSpeedActive
+ *
+ * if (ExtendedSpeed)
+ *    PortInfo:LinkSpeedExtSupported
+ *    PortInfo:LinkSpeedExtEnabled
+ *    PortInfo:LinkSpeedExtActive
+ * else
+ *    0 for these fields
+ *
+ * if (MellanoxExtenedPortInfo)
+ *    MellanoxExtPortInfo:LinkSpeedSupported
+ *    MellanoxExtPortInfo:LinkSpeedEnabled
+ *    MellanoxExtPortInfo:LinkSpeedActive
+ * else
+ *    0 for these fields
+ *
+ * If the fields are requested with a valid pointer
+ *
+ */
+void
+port_info_get_speed_fields(ibnd_port_t *port,
+			int *pi_lss, int *pi_lse, int *pi_lsa,
+			int *pi_ext_lss, int *pi_ext_lse, int *pi_ext_lsa,
+			int *mepi_lss, int *mepi_lse, int *mepi_lsa)
+{
+	int cap_mask;
+	uint8_t *info;
+	if (pi_lss)
+		*pi_lss = mad_get_field(port->info, 0,
+				IB_PORT_LINK_SPEED_SUPPORTED_F);
+	if (pi_lse)
+		*pi_lse = mad_get_field(port->info, 0,
+				IB_PORT_LINK_SPEED_ENABLED_F);
+	if (pi_lsa)
+		*pi_lsa = mad_get_field(port->info, 0,
+				IB_PORT_LINK_SPEED_ACTIVE_F);
+
+	if (port->node->type == IB_NODE_SWITCH)
+		info = (uint8_t *)&port->node->ports[0]->info;
+	else
+		info = (uint8_t *)&port->info;
+	cap_mask = mad_get_field(info, 0, IB_PORT_CAPMASK_F);
+	if (cap_mask & CL_NTOH32(IB_PORT_CAP_HAS_EXT_SPEEDS)) {
+		if (pi_ext_lss)
+			*pi_ext_lss = mad_get_field(port->info, 0,
+					IB_PORT_LINK_SPEED_EXT_SUPPORTED_F);
+		if (pi_ext_lse)
+			*pi_ext_lse = mad_get_field(port->info, 0,
+					IB_PORT_LINK_SPEED_EXT_ENABLED_F);
+		if (pi_ext_lsa)
+			*pi_ext_lsa = mad_get_field(port->info, 0,
+					IB_PORT_LINK_SPEED_EXT_ACTIVE_F);
+	} else {
+		if (pi_ext_lss)
+			*pi_ext_lss = 0;
+		if (pi_ext_lse)
+			*pi_ext_lse = 0;
+		if (pi_ext_lsa)
+			*pi_ext_lsa = 0;
+	}
+
+	if (mepi_lss)
+		*mepi_lss = mad_get_field(port->ext_info, 0,
+				IB_MLNX_EXT_PORT_LINK_SPEED_SUPPORTED_F);
+	if (mepi_lse)
+		*mepi_lse = mad_get_field(port->ext_info, 0,
+				IB_MLNX_EXT_PORT_LINK_SPEED_ENABLED_F);
+	if (mepi_lsa)
+		*mepi_lsa = mad_get_field(port->ext_info, 0,
+				IB_MLNX_EXT_PORT_LINK_SPEED_ACTIVE_F);
+}
+
