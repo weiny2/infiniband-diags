@@ -261,6 +261,9 @@ static int process_opt(int ch, char *optarg)
 				optarg);
 		ibd_sm_id = &sm_portid;
 		break;
+	case 'm':
+		smp_mkey_set(strtoull(optarg, 0, 0));
+		break;
 	default:
 		return -1;
 	}
@@ -277,6 +280,7 @@ static const struct ibdiag_opt common_opts[] = {
 	{"Guid", 'G', 0, NULL, "use GUID address argument"},
 	{"timeout", 't', 1, "<ms>", "timeout in ms"},
 	{"sm_port", 's', 1, "<lid>", "SM port lid"},
+	{"m_key", 'm', 1, "<key>", "M_Key to use in request"},
 	{"errors", 'e', 0, NULL, "show send and receive errors"},
 	{"verbose", 'v', 0, NULL, "increase verbosity level"},
 	{"debug", 'd', 0, NULL, "raise debug level"},
