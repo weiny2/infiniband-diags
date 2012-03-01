@@ -123,6 +123,7 @@ struct ibfc_port {
 	struct ibfc_port *prev;
 	char *name;
 	int port_num;
+	int port_ext_num;
 	struct ibfc_prop prop;
 	void *user_data;
 	struct ibfc_port *remote;
@@ -190,7 +191,7 @@ dup_prop(struct ibfc_prop *dest, struct ibfc_prop *src)
 }
 
 static ibfc_port_t *
-calloc_port(char *name, int port_num, struct ibfc_prop *prop)
+calloc_port(char *name, int port_num, int port_ext_num, struct ibfc_prop *prop)
 {
 	ibfc_port_t *port = calloc(1, sizeof *port);
 	if (!port)
@@ -200,6 +201,7 @@ calloc_port(char *name, int port_num, struct ibfc_prop *prop)
 	port->prev = NULL;
 	port->name = strdup(name);
 	port->port_num = port_num;
+	port->port_ext_num = port_ext_num;
 	dup_prop(&port->prop, prop);
 	return (port);
 }
@@ -274,9 +276,9 @@ add_port(ibfc_conf_t *fabricconf, ibfc_port_t *port)
 
 static ibfc_port_t *
 calloc_add_port(ibfc_conf_t *fabricconf, char *name, int port_num,
-	struct ibfc_prop *prop)
+		int port_ext_num, struct ibfc_prop *prop)
 {
-	ibfc_port_t *port = calloc_port(name, port_num, prop);
+	ibfc_port_t *port = calloc_port(name, port_num, port_ext_num, prop);
 	if (!port)
 		return (NULL);
 	add_port(fabricconf, port);
@@ -284,16 +286,21 @@ calloc_add_port(ibfc_conf_t *fabricconf, char *name, int port_num,
 }
 
 static int
-add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_str,
-	struct ibfc_prop *prop, char *rname, char *rport_str)
+add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_num_str,
+	char *lport_ext_num_str, struct ibfc_prop *prop, char *rname,
+	char *rport_num_str, char *rport_ext_num_str)
 {
 	int found = 0;
 	int lport_alloc = 0;
 	ibfc_port_t *lport, *rport;
-	unsigned long lpn, rpn;
+	unsigned long lpn, rpn, lpen=0, rpen=0;
 
-	lpn = strtoul(lport_str, NULL, 0);
-	rpn = strtoul(rport_str, NULL, 0);
+	lpn = strtoul(lport_num_str, NULL, 0);
+	rpn = strtoul(rport_num_str, NULL, 0);
+	if (lport_ext_num_str)
+		lpen = strtoul(lport_ext_num_str, NULL, 0);
+	if (rport_ext_num_str)
+		rpen = strtoul(rport_ext_num_str, NULL, 0);
 
 	/* No need to check errno
 	 * both 0 and ULONG_MAX are invalid port numbers
@@ -303,8 +310,8 @@ add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_str,
 		fprintf(fabricconf->err_fd,
 			"ERROR: Invalid port number (\"%s\" or \"%s\") for "
 			"link \"%s\":%s  ---> \"%s\":%s\n",
-			lport_str, rport_str,
-			lname, lport_str, rname, rport_str);
+			lport_num_str, rport_num_str,
+			lname, lport_num_str, rname, rport_num_str);
 		return (EINVAL);
 	}
 
@@ -325,7 +332,7 @@ add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_str,
 			remove_free_port(fabricconf, lport->remote);
 		dup_prop(&lport->prop, prop);
 	} else {
-		lport = calloc_add_port(fabricconf, lname, lpn, prop);
+		lport = calloc_add_port(fabricconf, lname, lpn, lpen, prop);
 		if (!lport) {
 			fprintf(fabricconf->err_fd, "ERROR: failed to allocated lport\n");
 			return (ENOMEM);
@@ -346,7 +353,7 @@ add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_str,
 			remove_free_port(fabricconf, rport->remote);
 		dup_prop(&rport->prop, prop);
 	} else {
-		rport = calloc_add_port(fabricconf, rname, rpn, prop);
+		rport = calloc_add_port(fabricconf, rname, rpn, rpen, prop);
 		if (!rport) {
 			fprintf(fabricconf->err_fd, "ERROR: failed to allocated lport\n");
 			if (lport_alloc)
@@ -573,12 +580,14 @@ parse_port(char *node_name, xmlNode *portNode, struct ibfc_prop *parent_prop,
 {
 	int rc = 0;
 	xmlNode *cur = NULL;
-	char *port = (char *)xmlGetProp(portNode, (xmlChar *)"num");
+	char *port_num = (char *)xmlGetProp(portNode, (xmlChar *)"num");
+	char *port_ext_num = (char *)xmlGetProp(portNode, (xmlChar *)"extnum");
 	struct ibfc_prop prop = IBCONF_DEFAULT_PROP;
-	char *r_port = NULL;
+	char *r_port_num = NULL;
+	char *r_port_ext_num = NULL;
 	char *r_node = NULL;
 
-	if (!port)
+	if (!port_num)
 		return (EIO);
 
 	dup_prop(&prop, parent_prop); /* inherit the properties from our parent */
@@ -589,7 +598,8 @@ parse_port(char *node_name, xmlNode *portNode, struct ibfc_prop *parent_prop,
 	     cur = cur->next) {
 		if (cur->type == XML_ELEMENT_NODE) {
 			if (strcmp((char *)cur->name, "r_port") == 0) {
-				r_port = (char *)xmlNodeGetContent(cur);
+				r_port_num = (char *)xmlNodeGetContent(cur);
+				r_port_ext_num = (char *)xmlGetProp(cur, (xmlChar *)"extnum");
 			}
 			if (strcmp((char *)cur->name, "r_node") == 0) {
 				r_node = (char *)xmlNodeGetContent(cur);
@@ -597,11 +607,12 @@ parse_port(char *node_name, xmlNode *portNode, struct ibfc_prop *parent_prop,
 		}
 	}
 
-	rc = add_link(fabricconf, (char *)node_name, (char *)port, &prop,
-		(char *)r_node, (char *)r_port);
+	rc = add_link(fabricconf, (char *)node_name, (char *)port_num,
+		(char *)port_ext_num, &prop, (char *)r_node,
+		(char *)r_port_num, (char *)r_port_ext_num);
 
-	xmlFree(port);
-	xmlFree(r_port);
+	xmlFree(port_num);
+	xmlFree(r_port_num);
 	xmlFree(r_node);
 	free_stack_prop(&prop);
 
@@ -879,6 +890,7 @@ char *ibfc_port_get_name(ibfc_port_t *port)
 	return (port->name);
 }
 int   ibfc_port_get_port_num(ibfc_port_t *port) { return (port->port_num); }
+int   ibfc_port_get_port_ext_num(ibfc_port_t *port) { return (port->port_ext_num); }
 ibfc_port_t *ibfc_port_get_remote(ibfc_port_t *port)
 	{ return (port->remote); }
 void  ibfc_port_set_user(ibfc_port_t *port, void *user_data)
@@ -1035,7 +1047,8 @@ ibfc_get_port_list(ibfc_conf_t *fabricconf, char *name,
 	for (cur = fabricconf->ports[h]; cur; cur = cur->next)
 		if (strcmp((const char *)cur->name, (const char *)name) == 0) {
 			ibfc_port_t *tmp = NULL;
-			tmp = calloc_port(cur->name, cur->port_num, &cur->prop);
+			tmp = calloc_port(cur->name, cur->port_num,
+					cur->port_ext_num, &cur->prop);
 			if (!tmp) {
 				ibfc_free_port_list(port_list);
 				return (ENOMEM);

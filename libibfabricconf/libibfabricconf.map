@@ -6,6 +6,7 @@ IBFABRICCONF_1.0 {
 		ibfc_port_get_named_property;
 		ibfc_port_get_name;
 		ibfc_port_get_port_num;
+		ibfc_port_get_port_ext_num;
 		ibfc_port_get_remote;
 		ibfc_port_set_user;
 		ibfc_port_get_user;

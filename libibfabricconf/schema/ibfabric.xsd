@@ -50,13 +50,24 @@
 
   <xs:complexType name="port">
     <xs:sequence>
-      <xs:element name="r_port" type="xs:int"/>
+      <xs:element name="r_port" type="r_port"/>
       <xs:element name="r_node" type="xs:string"/>
     </xs:sequence>
     <xs:attribute name="num" type="xs:integer" use="required"/>
+      <!-- port number -->
+    <xs:attribute name="extnum" type="xs:integer"/>
+      <!-- external port number -->
     <xs:attribute name="width" type="width"/>
     <xs:attribute name="speed" type="speed"/>
   </xs:complexType> <!-- port -->
+
+  <xs:complexType name="r_port">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="extnum" type="xs:int"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 
   <xs:complexType name="chassis">
     <xs:simpleContent>

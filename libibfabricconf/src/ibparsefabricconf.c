@@ -48,13 +48,29 @@ void
 print_port(ibfc_port_t *port, void *user_data)
 {
 	char prop[256];
+	char port_ext_num_str[8];
+	char rport_ext_num_str[8];
+	int i = 0;
+
+	port_ext_num_str[0] = '\0';
+	rport_ext_num_str[0] = '\0';
+
+	if ((i = ibfc_port_get_port_ext_num(port)) != 0)
+		sprintf(port_ext_num_str, "%3d", i);
+	if ((i = ibfc_port_get_port_ext_num(ibfc_port_get_remote(port))) != 0)
+		sprintf(rport_ext_num_str, "%3d", i);
+
 	if (delim_out)
-		printf("%s%s%d%s%d%s%s%s%s%s%s\n",
+		printf("%s%s%d%s%s%s%d%s%s%s%s%s%s%s%s\n",
 			ibfc_port_get_name(port),
 			delim_out,
 			ibfc_port_get_port_num(port),
 			delim_out,
+			port_ext_num_str,
+			delim_out,
 			ibfc_port_get_port_num(ibfc_port_get_remote(port)),
+			delim_out,
+			rport_ext_num_str,
 			delim_out,
 			ibfc_port_get_name(ibfc_port_get_remote(port)),
 			delim_out,
@@ -62,11 +78,13 @@ print_port(ibfc_port_t *port, void *user_data)
 			delim_out,
 			ibfc_width_str(ibfc_port_get_width(port)));
 	else
-		printf ("\"%s\" p:%3d  <==(%s)==>  p:%3d \"%s\"\n",
+		printf ("\"%s\" p:%3d[%s]  <==(%s)==>  p:%3d[%s] \"%s\"\n",
 			ibfc_port_get_name(port),
 			ibfc_port_get_port_num(port),
+			port_ext_num_str,
 			ibfc_sprintf_port_properties(prop, 256, port),
 			ibfc_port_get_port_num(ibfc_port_get_remote(port)),
+			rport_ext_num_str,
 			ibfc_port_get_name(ibfc_port_get_remote(port))
 			);
 }

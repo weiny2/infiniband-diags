@@ -20,5 +20,6 @@
 	<linklist name="test switch 2">
 		<port num="1"><r_port>1</r_port><r_node>node 3</r_node></port>
 		<port num="2"><r_port>1</r_port><r_node>node 4</r_node></port>
+		<port num="3" extnum="5"><r_port extnum="6">1</r_port><r_node>node 5</r_node></port>
 	</linklist>
 </ibfabric>
