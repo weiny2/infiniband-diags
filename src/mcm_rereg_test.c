@@ -451,6 +451,9 @@ int main(int argc, char **argv)
 	if (!srcport)
 		err("Failed to open port");
 
+	// If and when mkey is supported here.
+	//smp_mkey_set(srcport, ibd_mkey);
+
 #if 1
 	ib_resolve_smlid_via(&dport_id, TMO, srcport);
 #else

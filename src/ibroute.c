@@ -432,6 +432,8 @@ int main(int argc, char **argv)
 	if (!srcport)
 		IBERROR("Failed to open '%s' port '%d'", ibd_ca, ibd_ca_port);
 
+	smp_mkey_set(srcport, ibd_mkey);
+
 	if (!argc) {
 		if (ib_resolve_self_via(&portid, 0, 0, srcport) < 0)
 			IBERROR("can't resolve self addr");
