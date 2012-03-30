@@ -1,0 +1,42 @@
+The Goals for the XML config file were as follows:
+
+	1) provide connection information when links are down
+	2) not rely on GUID's (a logical, rather than physical description of
+	   the fabric)
+	3) Perform checks for speed and width to be able to deprecate a number
+	   of the scripts.
+
+These goals have been accomplished with the current implementation.
+
+Allow for subnets to have a prefix to determine from a node which port the
+subnet should be on.  Change root tag to be ib_config??
+
+Three ways to specify the fabric.
+
+	1) subnet prefix
+	2) CA/Port
+	3) PortGUID
+
+Expand the chassis config to be some more generic pattern.
+Perhaps just new tag name?
+
+Allow for patterns to be written.
+
+	something like:
+	<port num="[1-18]"><r_port>1</r_port><r_node>node [1-18]</r_node></port>
+
+
+Allow for include files simple append xml from included file into this one.
+Already sort of done with the chassis tag.
+
+Include files are very difficult in XML...
+
+Perhaps the chassis tag can be expanded to be simply "pattern" tag.  So you
+name your pattern and it fills in the name.  This is basically already done.
+The only thing which is different is the terminology.
+
+Is there anyway to not encode the HCA-# or "slot" in the name?
+	No. I don't think so.  This information is not available from the IB
+	side.  I would be up to the OS on the node (RHEL start up scripts for
+	example) to set them correctly.
+

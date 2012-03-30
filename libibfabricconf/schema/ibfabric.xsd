@@ -2,7 +2,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified"
-    version="1.0">
+    version="1.1">
 
   <xs:element name="ibfabric">
     <xs:complexType>
@@ -16,12 +16,11 @@
       </xs:sequence>
       <xs:attribute name="schemaVersion" type="xs:decimal" use="required"/>
       <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="subnetPrefix" type="xs:string"/>
       <xs:attribute name="width" type="width"/>
       <xs:attribute name="speed" type="speed"/>
     </xs:complexType>
   </xs:element> <!-- ibfabric -->
-
-  <!-- define our types below -->
 
   <xs:complexType name="subfabric">
     <xs:sequence minOccurs="1" maxOccurs="unbounded">
@@ -77,6 +76,13 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType> <!-- chassis -->
+
+  <xs:complexType name="include">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType> <!-- include -->
 
   <xs:simpleType name="width">
     <xs:restriction base="xs:string">
