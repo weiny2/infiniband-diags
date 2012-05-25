@@ -110,15 +110,24 @@ struct bind_handle {
 	int fd, agent;
 	ib_portid_t dport;
 	struct ibmad_port *srcport;
+	int use_rdma;
+	uint32_t rdma_size_mb;
 };
 typedef struct bind_handle * bind_handle_t;
-bind_handle_t sa_get_bind_handle(void);
+bind_handle_t sa_get_bind_handle(uint32_t sa_qpn, uint8_t sa_mtu,
+				uint32_t rdma_size_mb);
 void sa_free_bind_handle(bind_handle_t h);
 
+struct rdma_memory {
+	struct ibv_mr *mr;
+	uint8_t       *buf;
+	size_t         size;
+};
 struct sa_query_result {
 	uint32_t status;
 	unsigned result_cnt;
 	void *p_result_madw;
+	struct rdma_memory *rdma_res;
 };
 int sa_query(struct bind_handle *h, uint8_t method,
 	     uint16_t attr, uint32_t mod, uint64_t comp_mask, uint64_t sm_key,
