@@ -57,6 +57,8 @@
 #include <iba/ib_types.h>
 #include <complib/cl_nodenamemap.h>
 
+#include <infiniband/verbs.h>
+
 #include "ibdiag_common.h"
 
 struct query_params {
@@ -1636,8 +1638,8 @@ int main(int argc, char **argv)
 	params.qos_class = -1;
 	params.sl = -1;
 	params.proxy_join = -1;
-	params.sa_mtu = 4; // what would be a reasonalbe default?
-			   // maybe the MTU of the local port?
+	params.sa_mtu = IBV_MTU_2048; // what would be a reasonalbe default?
+					// maybe the MTU of the local port?
 
 	n = sprintf(usage_args, "[query-name] [<name> | <lid> | <guid>]\n"
 		    "\nSupported query names (and aliases):\n");

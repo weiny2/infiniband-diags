@@ -769,7 +769,7 @@ int sa_rdma_connect_qp(struct rdma_conn *conn, uint32_t rqpn)
 		.qp_state		= IBV_QPS_RTR,
 		.path_mtu		= conn->path.mtu,
 		.dest_qp_num		= conn->rqpn,
-		.rq_psn			= 0,
+		.rq_psn			= 1,
 		.max_dest_rd_atomic	= 1,
 		.min_rnr_timer		= 12,
 		.ah_attr		= {
@@ -797,7 +797,7 @@ int sa_rdma_connect_qp(struct rdma_conn *conn, uint32_t rqpn)
 	attr.timeout	     = 14;
 	attr.retry_cnt	     = 7;
 	attr.rnr_retry	     = 7;
-	attr.sq_psn	     = 0;
+	attr.sq_psn	     = 1;
 	attr.max_rd_atomic   = 1;
 	if (ibv_modify_qp(conn->qp, &attr,
 			  IBV_QP_STATE              |
@@ -810,7 +810,7 @@ int sa_rdma_connect_qp(struct rdma_conn *conn, uint32_t rqpn)
 		return 1;
 	}
 
-	IBWARN("QP 0x%x connected to SA QPn 0x%x\n",
+	IBWARN("QPn %u connected to SA QPn %u\n",
 		conn->qp->qp_num, conn->rqpn);
 	return 0;
 }
@@ -922,9 +922,10 @@ int sa_rdma_create_qp(void)
 		struct ibv_qp_attr attr = {
 			.qp_state        = IBV_QPS_INIT,
 			.pkey_index      = 0,
-			.port_num        = 1,
-			//.qp_access_flags = 0
-			.qp_access_flags = IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_REMOTE_READ
+			.port_num	 = rdma_ctx.device_port,
+			.qp_access_flags = IBV_ACCESS_REMOTE_WRITE |
+					   IBV_ACCESS_REMOTE_READ  |
+					   IBV_ACCESS_LOCAL_WRITE
 		};
 
 		if (ibv_modify_qp(qp, &attr,
@@ -941,7 +942,7 @@ int sa_rdma_create_qp(void)
 
 	rdma_ctx.conn.qp = qp;
 
-	IBWARN("QPn = 0x%x\n", rdma_ctx.conn.qp->qp_num);
+	IBWARN("QPn = %u\n", rdma_ctx.conn.qp->qp_num);
 	return (0);
 }
 
@@ -1196,12 +1197,14 @@ int sa_query(bind_handle_t h, uint8_t method,
 		eth_info->r_key  = cl_hton32(buf->mr->rkey);
 		eth_info->length = cl_hton32(buf->mr->length);
 
-#if 0
-		printf("sizeof %ld; addr %"PRIx64"; rkey %x; length %lx\n",
+		fprintf(stderr, "sizeof %ld; addr %"PRIx64"; rkey %x; length %lx; size %lx\n",
 			sizeof(struct sa_eth_info),
 			(uint64_t)buf->mr->addr,
 			buf->mr->rkey,
-			buf->mr->length);
+			buf->mr->length,
+			buf->size
+			);
+#if 0
 		//ibmad_packet_hexdump(stdout, (uint32_t*)mad, 256);
 #endif
 	}
