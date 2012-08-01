@@ -810,8 +810,12 @@ int sa_rdma_connect_qp(struct rdma_conn *conn, uint32_t rqpn)
 		return 1;
 	}
 
-	IBWARN("QPn %u connected to SA QPn %u\n",
-		conn->qp->qp_num, conn->rqpn);
+	IBWARN("QPn %u connected to SA QPn %u (SM LID: %u; SL %d; mtu %d)\n",
+		conn->qp->qp_num, conn->rqpn,
+			conn->path.dlid,
+			conn->path.sl,
+			conn->path.mtu
+				);
 	return 0;
 }
 
@@ -1026,9 +1030,13 @@ fprintf(stderr, "RDMA: Failed to find RDMA device: %s\n",
 		goto DestroyCQ;
 	}
 
-	IBWARN("SA Query RDMA configured on %s:%d\n",
+	IBWARN("SA Query RDMA configured on %s:%d (SM LID: %u; SL %d; mtu %d)\n",
 				ibv_get_device_name(dev),
-				rdma_ctx.device_port);
+				rdma_ctx.device_port,
+				rdma_ctx.sa_dlid,
+				rdma_ctx.sa_sl,
+				rdma_ctx.sa_mtu
+				);
 	return (sa_rdma_create_qp());
 
 DestroyCQ:
