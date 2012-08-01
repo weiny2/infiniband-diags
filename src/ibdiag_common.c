@@ -750,7 +750,7 @@ static struct sa_rdma_ctx {
 	/* FIXME for now hack these here */
 	uint8_t  sa_mtu;
 	uint8_t  sa_sl;
-	uint8_t  sa_dlid;
+	uint16_t  sa_dlid;
 } rdma_ctx;
 
 int sa_rdma_config_qp_path(struct rdma_conn *conn)
@@ -1083,6 +1083,7 @@ bind_handle_t sa_get_bind_handle(uint32_t sa_qpn, uint8_t sa_mtu,
 		free(handle);
 		return (NULL);
 	}
+printf(" SM lid: %u : %x\n", handle->dport.lid, handle->dport.lid);
 
 	if (sa_qpn) {
 		if (sa_rdma_init(sa_mtu, handle->dport.sl, handle->dport.lid)) {
