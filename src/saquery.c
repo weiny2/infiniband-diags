@@ -759,7 +759,9 @@ static int get_and_dump_any_records(bind_handle_t h, uint16_t attr_id,
 	if (ret)
 		return ret;
 
-	dump_results(&result, dump_func);
+	if (!getenv("IBSAQUERY_NO_DUMP")) {
+		dump_results(&result, dump_func);
+	}
 fprintf(stderr, "Received %d records\n", result.result_cnt);
 	sa_free_result_mad(&result);
 	return 0;
