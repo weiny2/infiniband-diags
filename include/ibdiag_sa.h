@@ -68,6 +68,12 @@ void sa_free_result_mad(struct sa_query_result *result);
 void *sa_get_query_rec(void *mad, unsigned i);
 void sa_report_err(int status);
 
+/* special query functions for common attributes */
+int sa_query_switchinfo(struct sa_handle * h, uint64_t sa_key, uint16_t sw_lid,
+			ib_switch_info_record_t *sr);
+int sa_query_noderecord(struct sa_handle * h, uint64_t sa_key,
+		      uint64_t comp_mask, ib_node_record_t *nr);
+
 /* Macros for setting query values and ComponentMasks */
 #define cl_hton8(x) (x)
 #define CHECK_AND_SET_VAL(val, size, comp_with, target, name, mask) \

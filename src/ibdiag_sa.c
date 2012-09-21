@@ -232,3 +232,56 @@ void sa_report_err(int status)
 	fprintf(stderr, "ERROR: Query result returned 0x%04x, %s%s\n",
 		status, mad_err_str, sa_err_str);
 }
+
+int sa_query_noderecord(struct sa_handle * h, uint64_t sm_key,
+		      uint64_t comp_mask, ib_node_record_t *nr)
+{
+	ib_node_record_t *tmp;
+	struct sa_query_result result;
+	int ret = sa_query(h, IB_MAD_METHOD_GET, IB_SA_ATTR_NODERECORD, 0,
+			   cl_ntoh64(comp_mask), sm_key, nr, sizeof(*nr), &result);
+	if (ret) {
+		fprintf(stderr, "Query SA failed: %s (%d)\n", strerror(ret), ret);
+		return ret;
+	}
+
+	if (result.status != IB_SA_MAD_STATUS_SUCCESS) {
+		sa_report_err(result.status);
+		return EIO;
+	}
+
+	tmp = sa_get_query_rec(result.p_result_madw, 0);
+	memcpy(nr, tmp, sizeof(*tmp));
+
+	sa_free_result_mad(&result);
+
+	return ret;
+}
+
+int sa_query_switchinfo(struct sa_handle * h, uint64_t sm_key, uint16_t lid,
+			ib_switch_info_record_t *sr)
+{
+	ib_switch_info_record_t *tmp = NULL;
+	struct sa_query_result result;
+	uint64_t comp_mask = 0;
+	memset(sr, 0, sizeof(*sr));
+	CHECK_AND_SET_VAL(lid, 16, 0, sr->lid, SWIR, LID);
+	int ret = sa_query(h, IB_MAD_METHOD_GET, IB_SA_ATTR_SWITCHINFORECORD, 0,
+			   cl_ntoh64(comp_mask), sm_key, sr, sizeof(*sr), &result);
+	if (ret) {
+		fprintf(stderr, "Query SA failed: %s\n", strerror(ret));
+		return ret;
+	}
+
+	if (result.status != IB_SA_MAD_STATUS_SUCCESS) {
+		sa_report_err(result.status);
+		return EIO;
+	}
+
+	tmp = sa_get_query_rec(result.p_result_madw, 0);
+	memcpy(sr, tmp, sizeof(*tmp));
+
+	sa_free_result_mad(&result);
+
+	return ret;
+}

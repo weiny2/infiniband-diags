@@ -49,6 +49,7 @@
 #include <infiniband/iba/ib_types.h>
 
 #include "ibdiag_common.h"
+#include "ibdiag_sa.h"
 
 struct ibmad_port *srcport;
 
@@ -578,6 +579,30 @@ void dump_portsamples_control(ib_portid_t * portid, int port)
 	       port, buf);
 }
 
+uint64_t get_guid_from_portid(ib_portid_t *portid)
+{
+	uint64_t *rc = (uint64_t *)&(portid->gid[8]);
+	return (*rc);
+}
+
+void query_nr_by_lid(struct sa_handle * h, ib_node_record_t *nr, uint16_t lid)
+{
+	uint64_t comp_mask = 0;
+	memset(nr, 0, sizeof(*nr));
+	CHECK_AND_SET_VAL(lid, 16, 0, nr->lid, NR, LID);
+	if (sa_query_noderecord(h, ibd_sakey, comp_mask, nr))
+		IBERROR("query SA.NodeRecord for lid %d\n", lid);
+}
+
+void query_nr_by_port_guid(struct sa_handle * h, ib_node_record_t *nr, uint64_t guid)
+{
+	uint64_t comp_mask = 0;
+	memset(nr, 0, sizeof(*nr));
+	CHECK_AND_SET_VAL(guid, 64, 0, nr->node_info.port_guid, NR, PORTGUID);
+	if (sa_query_noderecord(h, ibd_sakey, comp_mask, nr))
+		IBERROR("query SA.NodeRecord for port GUID 0x%"PRIx64"\n", guid);
+}
+
 static int process_opt(void *context, int ch, char *optarg)
 {
 	switch (ch) {
@@ -665,10 +690,8 @@ int main(int argc, char **argv)
 	uint64_t ext_mask = 0xffffffffffffffffULL;
 	uint16_t cap_mask;
 	int all_ports_loop = 0;
-	int node_type, num_ports = 0;
-	uint8_t data[IB_SMP_DATA_SIZE] = { 0 };
+	int num_ports = 0;
 	int start_port = 1;
-	int enhancedport0;
 	char *tmpstr;
 	int i;
 
@@ -761,8 +784,6 @@ int main(int argc, char **argv)
 	srcport = mad_rpc_open_port(ibd_ca, ibd_ca_port, mgmt_classes, 3);
 	if (!srcport)
 		IBERROR("Failed to open '%s' port '%d'", ibd_ca, ibd_ca_port);
-
-	smp_mkey_set(srcport, ibd_mkey);
 
 	if (argc) {
 		if (resolve_portid_str(ibd_ca, ibd_ca_port, &portid, argv[0],
@@ -879,26 +900,31 @@ int main(int argc, char **argv)
 
 
 	if (all_ports_loop || (loop_ports && (all_ports || port == ALL_PORTS))) {
-		if (smp_query_via(data, &portid, IB_ATTR_NODE_INFO, 0, 0,
-				  srcport) < 0)
-			IBERROR("smp query nodeinfo failed");
-		node_type = mad_get_field(data, 0, IB_NODE_TYPE_F);
-		mad_decode_field(data, IB_NODE_NPORTS_F, &num_ports);
-		if (!num_ports)
-			IBERROR("smp query nodeinfo: num ports invalid");
+		struct sa_handle * h = sa_get_handle();
+		ib_node_record_t nr;
 
-		if (node_type == IB_NODE_SWITCH) {
-			if (smp_query_via(data, &portid, IB_ATTR_SWITCH_INFO,
-					  0, 0, srcport) < 0)
-				IBERROR("smp query nodeinfo failed");
-			enhancedport0 =
-			    mad_get_field(data, 0, IB_SW_ENHANCED_PORT0_F);
-			if (enhancedport0)
+		if (!ibd_timeout)
+			ibd_timeout = MAD_DEF_TIMEOUT_MS;
+
+		if (!h)
+			IBERROR("Failed to open SA connection\n");
+
+		if (ibd_dest_type == IB_DEST_LID)
+			query_nr_by_lid(h, &nr, portid.lid);
+		else
+			query_nr_by_port_guid(h, &nr, get_guid_from_portid(&portid));
+		num_ports = nr.node_info.num_ports;
+
+		if (nr.node_info.node_type == IB_NODE_SWITCH) {
+			ib_switch_info_record_t si;
+			sa_query_switchinfo(h, ibd_sakey, htons(nr.lid), &si);
+			if (si.switch_info.flags & 0x08)
 				start_port = 0;
 		}
 		if (all_ports_loop && !loop_ports)
 			IBWARN
 			    ("Emulating AllPortSelect by iterating through all ports");
+		sa_free_handle(h);
 	}
 
 	if (reset_only)
