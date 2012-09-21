@@ -603,6 +603,67 @@ void query_nr_by_port_guid(struct sa_handle * h, ib_node_record_t *nr, uint64_t 
 		IBERROR("query SA.NodeRecord for port GUID 0x%"PRIx64"\n", guid);
 }
 
+int get_node_stats_sa(uint8_t *num_ports, uint8_t * started_port)
+{
+	struct sa_handle * h = sa_get_handle();
+	ib_node_record_t nr;
+
+	if (!ibd_timeout)
+		ibd_timeout = MAD_DEF_TIMEOUT_MS;
+
+	if (!h)
+		IBERROR("Failed to open SA connection\n");
+
+	if (ibd_dest_type == IB_DEST_LID)
+		query_nr_by_lid(h, &nr, portid.lid);
+	else
+		query_nr_by_port_guid(h, &nr, get_guid_from_portid(&portid));
+
+	num_ports = nr.node_info.num_ports;
+
+	if (nr.node_info.node_type == IB_NODE_SWITCH) {
+		ib_switch_info_record_t si;
+		sa_query_switchinfo(h, ibd_sakey, htons(nr.lid), &si);
+		if (si.switch_info.flags & 0x08)
+			start_port = 0;
+	}
+	sa_free_handle(h);
+}
+
+int get_node_stats_smi(uint8_t * num_ports, uint8_t * start_port)
+{
+	smp_mkey_set(srcport, ibd_mkey);
+	if (smp_query_via(data, &portid, IB_ATTR_NODE_INFO, 0, 0,
+			  srcport) < 0)
+		IBERROR("smp query nodeinfo failed");
+	node_type = mad_get_field(data, 0, IB_NODE_TYPE_F);
+	mad_decode_field(data, IB_NODE_NPORTS_F, &num_ports);
+	if (!num_ports)
+		IBERROR("smp query nodeinfo: num ports invalid");
+
+	if (node_type == IB_NODE_SWITCH) {
+		if (smp_query_via(data, &portid, IB_ATTR_SWITCH_INFO,
+				  0, 0, srcport) < 0)
+			IBERROR("smp query nodeinfo failed");
+		enhancedport0 =
+		    mad_get_field(data, 0, IB_SW_ENHANCED_PORT0_F);
+		if (enhancedport0)
+			start_port = 0;
+	}
+}
+
+int get_node_stats(uint8_t *num_ports, uint8_t * start_port)
+{
+	/* There are 2 ways to get the node information we need
+	 * Although SA is technically correct SMI is much faster
+	 * So allow the user some choice in this matter
+	 */
+	if (ibd_sa_only)
+		return (get_node_stats_sa(num_ports, start_port));
+	else
+		return (get_node_stats_smi(num_ports, start_port));
+}
+
 static int process_opt(void *context, int ch, char *optarg)
 {
 	switch (ch) {
@@ -684,7 +745,8 @@ static int process_opt(void *context, int ch, char *optarg)
 
 int main(int argc, char **argv)
 {
-	int mgmt_classes[3] = { IB_SMI_CLASS, IB_SA_CLASS, IB_PERFORMANCE_CLASS };
+	int mgmt_classes[2] = { IB_SA_CLASS, IB_PERFORMANCE_CLASS };
+	int mgmt_classes_smi[3] = { IB_SMI_CLASS, IB_SA_CLASS, IB_PERFORMANCE_CLASS };
 	ib_portid_t portid = { 0 };
 	int mask = 0xffff;
 	uint64_t ext_mask = 0xffffffffffffffffULL;
@@ -781,7 +843,11 @@ int main(int argc, char **argv)
 		mask = ext_mask;
 	}
 
-	srcport = mad_rpc_open_port(ibd_ca, ibd_ca_port, mgmt_classes, 3);
+	if (ibd_sa_only)
+		srcport = mad_rpc_open_port(ibd_ca, ibd_ca_port, mgmt_classes, 2);
+	else
+		srcport = mad_rpc_open_port(ibd_ca, ibd_ca_port, mgmt_classes_smi, 3);
+
 	if (!srcport)
 		IBERROR("Failed to open '%s' port '%d'", ibd_ca, ibd_ca_port);
 
@@ -900,31 +966,10 @@ int main(int argc, char **argv)
 
 
 	if (all_ports_loop || (loop_ports && (all_ports || port == ALL_PORTS))) {
-		struct sa_handle * h = sa_get_handle();
-		ib_node_record_t nr;
-
-		if (!ibd_timeout)
-			ibd_timeout = MAD_DEF_TIMEOUT_MS;
-
-		if (!h)
-			IBERROR("Failed to open SA connection\n");
-
-		if (ibd_dest_type == IB_DEST_LID)
-			query_nr_by_lid(h, &nr, portid.lid);
-		else
-			query_nr_by_port_guid(h, &nr, get_guid_from_portid(&portid));
-		num_ports = nr.node_info.num_ports;
-
-		if (nr.node_info.node_type == IB_NODE_SWITCH) {
-			ib_switch_info_record_t si;
-			sa_query_switchinfo(h, ibd_sakey, htons(nr.lid), &si);
-			if (si.switch_info.flags & 0x08)
-				start_port = 0;
-		}
+		get_node_stats(&num_ports, &start_port);
 		if (all_ports_loop && !loop_ports)
 			IBWARN
 			    ("Emulating AllPortSelect by iterating through all ports");
-		sa_free_handle(h);
 	}
 
 	if (reset_only)
