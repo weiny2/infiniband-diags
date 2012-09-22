@@ -368,7 +368,7 @@ static void reset_counters(int extended, int timeout, int mask,
 	}
 }
 
-static int reset, reset_only, all_ports, loop_ports, port, extended, xmt_sl,
+static int reset, reset_only, all_ports, port, extended, xmt_sl,
     rcv_sl, xmt_disc, rcv_err, extended_speeds, smpl_ctl, oprcvcounters, flowctlcounters,
     vloppackets, vlopdata, vlxmitflowctlerrors, vlxmitcounters, swportvlcong,
     rcvcc, slrcvfecn, slrcvbecn, xmitcc, vlxmittimecc;
@@ -642,9 +642,6 @@ static int process_opt(void *context, int ch, char *optarg)
 		all_ports++;
 		port = ALL_PORTS;
 		break;
-	case 'l':
-		loop_ports++;
-		break;
 	case 'r':
 		reset++;
 		break;
@@ -693,7 +690,6 @@ int main(int argc, char **argv)
 		{"vlxmittimecc", 12, 0, NULL, "show VL Xmit Time congestion control counters"},
 		{"smplctl", 'c', 0, NULL, "show samples control"},
 		{"all_ports", 'a', 0, NULL, "show aggregated counters"},
-		{"loop_ports", 'l', 0, NULL, "iterate through each port"},
 		{"reset_after_read", 'r', 0, NULL, "reset counters after read"},
 		{"Reset_only", 'R', 0, NULL, "only reset counters"},
 		{0}
@@ -711,10 +707,11 @@ int main(int argc, char **argv)
 		"-R -a 32\t# reset performance counters of all ports",
 		"-R 32 2 0x0fff\t# reset only error counters of port 2",
 		"-R 32 2 0xf000\t# reset only non-error counters of port 2",
+		"32 1-10\t# read performance counters from lid 32, port 1-10, output each port",
 		"-a 32 1-10\t# read performance counters from lid 32, port 1-10, aggregate output",
-		"-l 32 1-10\t# read performance counters from lid 32, port 1-10, output each port",
+		"32 1,4,8\t# read performance counters from lid 32, port 1, 4, and 8, output each port",
 		"-a 32 1,4,8\t# read performance counters from lid 32, port 1, 4, and 8, aggregate output",
-		"-l 32 1,4,8\t# read performance counters from lid 32, port 1, 4, and 8, output each port",
+
 		NULL,
 	};
 
@@ -878,7 +875,7 @@ int main(int argc, char **argv)
 	}
 
 
-	if (all_ports_loop || (loop_ports && (all_ports || port == ALL_PORTS))) {
+	if (all_ports_loop) {
 		if (smp_query_via(data, &portid, IB_ATTR_NODE_INFO, 0, 0,
 				  srcport) < 0)
 			IBERROR("smp query nodeinfo failed");
@@ -896,33 +893,27 @@ int main(int argc, char **argv)
 			if (enhancedport0)
 				start_port = 0;
 		}
-		if (all_ports_loop && !loop_ports)
-			IBWARN
-			    ("Emulating AllPortSelect by iterating through all ports");
+		IBWARN("Emulating AllPortSelect by iterating through all ports");
 	}
 
 	if (reset_only)
 		goto do_reset;
 
-	if (all_ports_loop || (loop_ports && (all_ports || port == ALL_PORTS))) {
+	if (all_ports_loop) {
 		for (i = start_port; i <= num_ports; i++)
 			dump_perfcounters(extended, ibd_timeout, cap_mask,
-					  &portid, i, (all_ports_loop
-						       && !loop_ports));
-		if (all_ports_loop && !loop_ports) {
-			if (extended != 1)
-				output_aggregate_perfcounters(&portid,
-							      cap_mask);
-			else
-				output_aggregate_perfcounters_ext(&portid,
-								  cap_mask);
-		}
+					  &portid, i, 1);
+		if (extended != 1)
+			output_aggregate_perfcounters(&portid,
+						      cap_mask);
+		else
+			output_aggregate_perfcounters_ext(&portid,
+							  cap_mask);
 	} else if (ports_count > 1) {
 		for (i = 0; i < ports_count; i++)
 			dump_perfcounters(extended, ibd_timeout, cap_mask,
-					  &portid, ports[i],
-					  (all_ports && !loop_ports));
-		if (all_ports && !loop_ports) {
+					  &portid, ports[i], all_ports);
+		if (all_ports) {
 			if (extended != 1)
 				output_aggregate_perfcounters(&portid,
 							      cap_mask);
@@ -941,7 +932,7 @@ do_reset:
 	if (argc <= 2 && !extended && (cap_mask & IB_PM_PC_XMIT_WAIT_SUP))
 		mask |= (1 << 16);	/* reset portxmitwait */
 
-	if (all_ports_loop || (loop_ports && (all_ports || port == ALL_PORTS))) {
+	if (all_ports_loop) {
 		for (i = start_port; i <= num_ports; i++)
 			reset_counters(extended, ibd_timeout, mask, &portid, i);
 	} else if (ports_count > 1) {
