@@ -874,26 +874,51 @@ int main(int argc, char **argv)
 		goto done;
 	}
 
+	if (smp_query_via(data, &portid, IB_ATTR_NODE_INFO, 0, 0, srcport) < 0)
+		IBERROR("smp query nodeinfo failed");
+	node_type = mad_get_field(data, 0, IB_NODE_TYPE_F);
+	mad_decode_field(data, IB_NODE_NPORTS_F, &num_ports);
+	if (!num_ports)
+		IBERROR("smp query nodeinfo: num ports invalid");
+
+	if (node_type == IB_NODE_SWITCH) {
+		if (smp_query_via(data, &portid, IB_ATTR_SWITCH_INFO,
+				  0, 0, srcport) < 0)
+			IBERROR("smp query nodeinfo failed");
+		enhancedport0 =
+		    mad_get_field(data, 0, IB_SW_ENHANCED_PORT0_F);
+	}
 
 	if (all_ports_loop) {
-		if (smp_query_via(data, &portid, IB_ATTR_NODE_INFO, 0, 0,
-				  srcport) < 0)
-			IBERROR("smp query nodeinfo failed");
-		node_type = mad_get_field(data, 0, IB_NODE_TYPE_F);
-		mad_decode_field(data, IB_NODE_NPORTS_F, &num_ports);
-		if (!num_ports)
-			IBERROR("smp query nodeinfo: num ports invalid");
-
-		if (node_type == IB_NODE_SWITCH) {
-			if (smp_query_via(data, &portid, IB_ATTR_SWITCH_INFO,
-					  0, 0, srcport) < 0)
-				IBERROR("smp query nodeinfo failed");
-			enhancedport0 =
-			    mad_get_field(data, 0, IB_SW_ENHANCED_PORT0_F);
-			if (enhancedport0)
-				start_port = 0;
-		}
+		if (node_type == IB_NODE_SWITCH && enhancedport0)
+			start_port = 0;
 		IBWARN("Emulating AllPortSelect by iterating through all ports");
+	} else if (ports_count > 1) {
+		if (node_type == IB_NODE_CA)
+			IBERROR("Cannot specify > 1 port for CA");
+
+		for (i = 0; i < ports_count; i++) {
+			if (ports[i] > num_ports)
+				IBERROR("port %u out of range", ports[i]);
+
+			if (!ports[i]) {
+				if (node_type == IB_NODE_SWITCH
+				    && !enhancedport0)
+					IBERROR("enhanced port 0 not supported");
+				if (node_type == IB_NODE_CA)
+					IBERROR("port 0 invalid for CA");
+			}
+		}
+	} else {
+		if (port > num_ports)
+			IBERROR("port %u out of range", port);
+		if (!port) {
+			if (node_type == IB_NODE_SWITCH
+			    && !enhancedport0)
+				IBERROR("enhanced port 0 not supported");
+			if (node_type == IB_NODE_CA)
+				IBERROR("port 0 invalid for CA");
+		}
 	}
 
 	if (reset_only)
