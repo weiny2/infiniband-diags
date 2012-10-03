@@ -67,7 +67,7 @@ char *check_switch(ib_portid_t * portid, unsigned int *nports, uint64_t * guid,
 
 	DEBUG("checking node type");
 	if (!smp_query_via(ni, portid, IB_ATTR_NODE_INFO, 0, 0, srcport)) {
-		xdump(stderr, "nodeinfo\n", ni, sizeof ni);
+		attr_dump(stderr, ni, sizeof ni, "nodeinfo\n");
 		return "node info failed: valid addr?";
 	}
 

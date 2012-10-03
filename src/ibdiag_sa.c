@@ -108,7 +108,7 @@ int sa_query(struct sa_handle * h, uint8_t method,
 	mad_set_field64(umad_get_mad(umad), 0, IB_SA_MKEY_F, sm_key);
 
 	if (ibdebug > 1)
-		xdump(stdout, "SA Request:\n", umad_get_mad(umad), len);
+		MAD_DUMP(stderr, umad_get_mad(umad), len, "SA Request:\n");
 
 	ret = umad_send(h->fd, h->agent, umad, len, ibd_timeout, 0);
 	if (ret < 0) {
@@ -137,7 +137,7 @@ recv_mad:
 	mad = umad_get_mad(umad);
 
 	if (ibdebug > 1)
-		xdump(stdout, "SA Response:\n", mad, len);
+		MAD_DUMP(stderr, mad, len, "SA Response:\n");
 
 	method = (uint8_t) mad_get_field(mad, 0, IB_MAD_METHOD_F);
 	offset = mad_get_field(mad, 0, IB_SA_ATTROFFS_F);

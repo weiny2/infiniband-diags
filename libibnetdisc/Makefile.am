@@ -1,7 +1,9 @@
 
 #SUBDIRS = .
 
-INCLUDES = -I$(srcdir)/include -I$(includedir) -I$(includedir)/infiniband
+INCLUDES = -I$(srcdir)/include -I$(includedir) \
+		-I$(includedir)/infiniband \
+		-I$(srcdir)/../include
 
 lib_LTLIBRARIES = libibnetdisc.la
 sbin_PROGRAMS =
@@ -23,7 +25,8 @@ libibnetdisc_version_script =
 endif
 
 libibnetdisc_la_SOURCES = src/ibnetdisc.c src/ibnetdisc_cache.c src/chassis.c \
-			  src/chassis.h src/internal.h src/query_smp.c
+			  src/chassis.h src/internal.h src/query_smp.c \
+			  ../src/print_mad.c
 libibnetdisc_la_CFLAGS = -Wall $(DBGFLAGS) $(GLIB_CFLAGS)
 libibnetdisc_la_LDFLAGS = -version-info $(ibnetdisc_api_version) \
 	-export-dynamic $(libibnetdisc_version_script) \

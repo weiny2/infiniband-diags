@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
 		smp_get_init(umad, dlid, attr, mod);
 
 	if (ibdebug > 1)
-		xdump(stderr, "before send:\n", smp, 256);
+		MAD_DUMP(stderr, (uint8_t *)smp, 256, "before send:\n");
 
 	length = IB_MAD_SIZE;
 	if (umad_send(portid, mad_agent, umad, length, ibd_timeout, 0) < 0)
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 		IBPANIC("recv error: %s", drmad_status_str(smp));
 
 	if (!dump_char) {
-		xdump(stdout, 0, smp->data, 64);
+		attr_dump(stdout, smp->data, 64, "SMP Attribute Data:\n");
 		if (smp->status)
 			fprintf(stdout, "SMP status: 0x%x\n",
 				ntohs(smp->status));

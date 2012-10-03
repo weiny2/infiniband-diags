@@ -53,7 +53,6 @@
 #include <getopt.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include <stdarg.h>
 
 #include <infiniband/umad.h>
 #include <infiniband/mad.h>
@@ -588,6 +587,7 @@ int resolve_gid(char *ca_name, uint8_t ca_port, ib_portid_t * portid,
 	return 0;
 }
 
+
 int resolve_guid(char *ca_name, uint8_t ca_port, ib_portid_t *portid,
 		 uint64_t *guid, ib_portid_t *sm_id,
 		 const struct ibmad_port *srcport)
@@ -618,6 +618,8 @@ int resolve_guid(char *ca_name, uint8_t ca_port, ib_portid_t *portid,
 		return -1;
 
 	mad_decode_field(buf, IB_SA_PR_SL_F, &portid->sl);
+	if (ibdebug > 1)
+		attr_dump(stderr, buf, IB_SA_DATA_SIZE, "PR mad data\n");
 	return 0;
 }
 

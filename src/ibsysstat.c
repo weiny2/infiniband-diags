@@ -102,7 +102,7 @@ static int server_respond(void *umad, int size)
 		return -1;
 
 	if (ibdebug > 1)
-		xdump(stderr, "mad respond pkt\n", mad, IB_MAD_SIZE);
+		MAD_DUMP(stderr, mad, IB_MAD_SIZE, "mad respond pkt\n");
 
 	if (umad_send(mad_rpc_portid(srcport),
 		      mad_rpc_class_agent(srcport, rpc.mgtclass), umad, size,

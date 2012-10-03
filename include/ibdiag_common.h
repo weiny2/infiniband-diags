@@ -44,6 +44,8 @@
 #include <infiniband/iba/ib_types.h>
 #include <infiniband/ibnetdisc.h>
 
+#include "print_mad.h"
+
 extern int ibverbose;
 extern char *ibd_ca;
 extern int ibd_ca_port;
@@ -111,6 +113,8 @@ int resolve_self(char *ca_name, uint8_t ca_port, ib_portid_t *portid,
 int resolve_portid_str(char *ca_name, uint8_t ca_port, ib_portid_t * portid,
 		       char *addr_str, enum MAD_DEST dest_type,
 		       ib_portid_t *sm_id, const struct ibmad_port *srcport);
+
+/* printing functions */
 int vsnprint_field(char *buf, size_t n, enum MAD_FIELDS f, int spacing,
 		   const char *format, va_list va_args);
 int snprint_field(char *buf, size_t n, enum MAD_FIELDS f, int spacing,

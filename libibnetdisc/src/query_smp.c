@@ -40,6 +40,7 @@
 #include <infiniband/ibnetdisc.h>
 #include <infiniband/umad.h>
 #include "internal.h"
+#include "print_mad.h"
 
 extern int mlnx_ext_port_info_err(smp_engine_t * engine, ibnd_smp_t * smp,
 				  uint8_t * mad, void *cb_data);
@@ -92,6 +93,9 @@ static int send_smp(ibnd_smp_t * smp, smp_engine_t * engine)
 		IBND_ERROR("mad_build_pkt failed; %d\n", rc);
 		return rc;
 	}
+
+	if (engine->cfg->debug)
+		MAD_DUMP(stderr, umad_get_mad(umad), IB_MAD_SIZE, "sending:");
 
 	if ((rc = umad_send(engine->umad_fd, agent, umad, IB_MAD_SIZE,
 			    engine->cfg->timeout_ms, engine->cfg->retries)) < 0) {
@@ -180,6 +184,9 @@ static int process_one_recv(smp_engine_t * engine)
 
 	mad = umad_get_mad(umad);
 	trid = (uint32_t) mad_get_field64(mad, 0, IB_MAD_TRID_F);
+
+	if (engine->cfg->debug)
+		MAD_DUMP(stderr, mad, IB_MAD_SIZE, "Received:");
 
 	smp = (ibnd_smp_t *) cl_qmap_remove(&engine->smps_on_wire, trid);
 	if ((cl_map_item_t *) smp == cl_qmap_end(&engine->smps_on_wire)) {
