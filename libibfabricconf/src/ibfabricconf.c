@@ -107,7 +107,6 @@ hash_name(char *str)
 
 	while ((c = *str++))
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
 	return (hash % HTSZ);
 }
 
@@ -131,6 +130,7 @@ struct ibfc_prop {
 struct ibfc_port {
 	struct ibfc_port *next;
 	struct ibfc_port *prev;
+	struct ibfc_port *next_dont_care;
 	char *name;
 	int port_num;
 	int port_ext_num;
@@ -227,7 +227,21 @@ free_port(ibfc_port_t *p)
 static int
 port_equal(ibfc_port_t *port, char *n, int p)
 {
-	return (strcmp((const char *)port->name, (const char *)n) == 0 && port->port_num == p);
+	return (strcmp((const char *)port->name, (const char *)n) == 0
+		&&
+		port->port_num == p);
+}
+
+static int
+_port_num_dont_care(int p)
+{
+	return (p == IBFC_PORT_NUM_DONT_CARE);
+}
+
+int
+ibfc_port_num_dont_care(ibfc_port_t *port)
+{
+	return (_port_num_dont_care(port->port_num));
 }
 
 static ibfc_port_t *
@@ -329,17 +343,19 @@ add_link(ibfc_conf_t *fabricconf, char *lname, char *lport_num_str,
 	rport = find_port(fabricconf, rname, rpn);
 
 	if (lport) {
-		assert(lport->remote->remote == lport);
-		if (fabricconf->warn_dup) {
-			fprintf(fabricconf->err_fd,
-				"WARN: redefining port "
-				"\"%s\":%d  ---> %d:\"%s\"\n",
-				lport->name, lport->port_num,
-				lport->remote->port_num, lport->remote->name);
-			found = 1;
+		if (lpn != IBFC_PORT_NUM_DONT_CARE) {
+			assert(lport->remote->remote == lport);
+			if (fabricconf->warn_dup) {
+				fprintf(fabricconf->err_fd,
+					"WARN: redefining port "
+					"\"%s\":%d  ---> %d:\"%s\"\n",
+					lport->name, lport->port_num,
+					lport->remote->port_num, lport->remote->name);
+				found = 1;
+			}
+			if (lport->remote != rport)
+				remove_free_port(fabricconf, lport->remote);
 		}
-		if (lport->remote != rport)
-			remove_free_port(fabricconf, lport->remote);
 		dup_prop(&lport->prop, prop);
 	} else {
 		lport = calloc_add_port(fabricconf, lname, lpn, lpen, prop);

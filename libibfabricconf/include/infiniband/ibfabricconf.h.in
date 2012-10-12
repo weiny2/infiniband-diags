@@ -116,6 +116,24 @@ char *ibfc_width_str(ibfc_width_t width);
 char *ibfc_sprintf_port_properties(char ret[], unsigned n, ibfc_port_t *port);
 	/* returns "ret" or NULL on error */
 
+int ibfc_port_num_dont_care(ibfc_port_t *port);
+	/* port number don't cares allow for the configuration to indicate 2
+	 * nodes should be connected but we don't care how */
+ibfc_port_t *ibfc_port_get_next_dont_care(ibfc_port_t *remote_port);
+	/* get_next_dont_care returns the next remote port which was
+	 * specified as a don't care.
+	 * This is needed because there might be multiple remote port's
+	 * specified as "don't care"
+	 *
+	 * Example:
+	 * p = ibfc_get_port(conf, "sw1", IBFC_PORT_NUM_DONT_CARE);
+	 * rp = ibfc_port_get_remote(p);
+	 * while (rp) {
+	 *    ... do something with rp
+	 *    rp = ibfc_port_get_next_dont_care(rp);
+	 * }
+	 */
+
 /* iter functions */
 typedef void (*process_port_func)(ibfc_port_t *port, void *user_data);
 void ibfc_iter_ports(ibfc_conf_t *fabricconf, process_port_func func,
