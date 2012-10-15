@@ -57,6 +57,8 @@
 #include <iba/ib_types.h>
 #include <complib/cl_nodenamemap.h>
 
+#include <infiniband/verbs.h>
+
 #include "ibdiag_common.h"
 #include "ibdiag_sa.h"
 
@@ -80,6 +82,9 @@ struct query_params {
 	uint8_t scope;
 	uint8_t join_state;
 	int proxy_join;
+	uint32_t sa_qpn;
+	uint8_t sa_mtu;
+	uint32_t rdma_size_mb;
 };
 
 struct query_cmd {
@@ -762,6 +767,7 @@ static int get_and_dump_any_records(struct sa_handle * h, uint16_t attr_id,
 		return ret;
 
 	dump_results(&result, dump_func);
+fprintf(stderr, "Received %d records\n", result.result_cnt);
 	sa_free_result_mad(&result);
 	return 0;
 }
@@ -1561,6 +1567,15 @@ static int process_opt(void *context, int ch, char *optarg)
 	case 22:
 		p->service_id = strtoull(optarg, NULL, 0);
 		break;
+	case 23:
+		p->sa_qpn = (uint32_t) strtoul(optarg, NULL, 0);
+		break;
+	case 24:
+		p->sa_mtu = (uint32_t) strtoul(optarg, NULL, 0);
+		break;
+	case 25:
+		p->rdma_size_mb = (uint32_t) strtoul(optarg, NULL, 0);
+		break;
 	default:
 		return -1;
 	}
@@ -1644,6 +1659,9 @@ int main(int argc, char **argv)
 		{"join_state", 'J', 1, NULL, "Join state (MCMemberRecord)"},
 		{"proxy_join", 'X', 1, NULL, "Proxy join (MCMemberRecord)"},
 		{"service_id", 22, 1, NULL, "ServiceID (PathRecord)"},
+		{"sa_qp", 23, 1, "<qpn>", "SA QPn"},
+		{"sa_mtu", 24, 1, "<mtu>", "SA MTU"},
+		{"rdma_size_mb", 25, 1, "<size>", "RDMA Buffer size (in MB) to use"},
 		{0}
 	};
 
@@ -1654,6 +1672,8 @@ int main(int argc, char **argv)
 	params.qos_class = -1;
 	params.sl = -1;
 	params.proxy_join = -1;
+	params.sa_mtu = IBV_MTU_2048; // what would be a reasonalbe default?
+					// maybe the MTU of the local port?
 
 	n = sprintf(usage_args, "[query-name] [<name> | <lid> | <guid>]\n"
 		    "\nSupported query names (and aliases):\n");
@@ -1721,7 +1741,8 @@ int main(int argc, char **argv)
 		ibdiag_show_usage();
 	}
 
-	h = sa_get_handle();
+	h = sa_get_handle(params.sa_qpn, params.sa_mtu,
+				params.rdma_size_mb);
 	if (!h)
 		IBPANIC("Failed to bind to the SA");
 

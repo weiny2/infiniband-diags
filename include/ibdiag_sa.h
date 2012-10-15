@@ -50,15 +50,24 @@ struct sa_handle {
 	int fd, agent;
 	ib_portid_t dport;
 	struct ibmad_port *srcport;
+	int use_rdma;
+	uint32_t rdma_size_mb;
 };
 
+struct rdma_memory {
+	struct ibv_mr *mr;
+	uint8_t       *buf;
+	size_t         size;
+};
 struct sa_query_result {
 	uint32_t status;
 	unsigned result_cnt;
 	void *p_result_madw;
+	struct rdma_memory *rdma_res;
 };
 
-struct sa_handle * sa_get_handle(void);
+struct sa_handle * sa_get_handle(uint32_t sa_qpn, uint8_t sa_mtu,
+				uint32_t rdma_size_mb);
 void sa_free_handle(struct sa_handle * h);
 
 int sa_query(struct sa_handle *h, uint8_t method,

@@ -91,7 +91,7 @@ endif
 noinst_LIBRARIES = libcommon.a
 
 AM_CFLAGS = -Wall $(DBGFLAGS)
-LDADD = libcommon.a
+LDADD = libcommon.a -libverbs
 
 libcommon_a_SOURCES = src/ibdiag_common.c src/ibdiag_sa.c
 src_ibaddr_SOURCES = src/ibaddr.c
