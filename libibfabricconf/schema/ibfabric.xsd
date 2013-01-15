@@ -2,7 +2,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified"
-    version="1.1">
+    version="1.0">
 
   <xs:element name="ibfabric">
     <xs:complexType>
@@ -12,6 +12,7 @@
           <xs:element name="linklist" type="linklist"/>
           <xs:element name="subfabric" type="subfabric"/>
           <xs:element name="property" type="property"/>
+          <xs:element name="include" type="include"/>
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="schemaVersion" type="xs:decimal" use="required"/>
@@ -22,6 +23,8 @@
     </xs:complexType>
   </xs:element> <!-- ibfabric -->
 
+<!-- define our types below -->
+
   <xs:complexType name="subfabric">
     <xs:sequence minOccurs="1" maxOccurs="unbounded">
       <xs:choice>
@@ -29,11 +32,17 @@
         <xs:element name="linklist" type="linklist"/>
         <xs:element name="subfabric" type="subfabric"/>
         <xs:element name="property" type="property"/>
+        <xs:element name="include" type="include"/>
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="width" type="width"/>
     <xs:attribute name="speed" type="speed"/>
   </xs:complexType> <!-- subfabric -->
+
+  <xs:attributeGroup name="nodeID">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="nameIsGUID" type="xs:string" default="false"/>
+  </xs:attributeGroup>
 
   <xs:complexType name="linklist">
     <xs:sequence minOccurs="1" maxOccurs="unbounded">
@@ -42,31 +51,26 @@
         <xs:element name="port" type="port"/>
       </xs:choice>
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attributeGroup ref="nodeID"/>
     <xs:attribute name="width" type="width"/>
     <xs:attribute name="speed" type="speed"/>
   </xs:complexType> <!-- linklist -->
 
   <xs:complexType name="port">
     <xs:sequence>
-      <xs:element name="r_port" type="r_port"/>
-      <xs:element name="r_node" type="xs:string"/>
+      <xs:element name="remote" type="remote"/>
     </xs:sequence>
     <xs:attribute name="num" type="xs:integer" use="required"/>
-      <!-- port number -->
     <xs:attribute name="extnum" type="xs:integer"/>
-      <!-- external port number -->
     <xs:attribute name="width" type="width"/>
     <xs:attribute name="speed" type="speed"/>
   </xs:complexType> <!-- port -->
 
-  <xs:complexType name="r_port">
-    <xs:simpleContent>
-      <xs:extension base="xs:string">
-        <xs:attribute name="extnum" type="xs:int"/>
-      </xs:extension>
-    </xs:simpleContent>
-  </xs:complexType>
+  <xs:complexType name="remote">
+    <xs:attribute name="port" type="xs:integer" use="required"/>
+    <xs:attributeGroup ref="nodeID"/>
+    <xs:attribute name="extnum" type="xs:integer"/>
+  </xs:complexType> <!-- remote -->
 
   <xs:complexType name="chassis">
     <xs:simpleContent>
@@ -79,8 +83,7 @@
 
   <xs:complexType name="include">
     <xs:simpleContent>
-      <xs:extension base="xs:string">
-      </xs:extension>
+      <xs:extension base="xs:string"/>
     </xs:simpleContent>
   </xs:complexType> <!-- include -->
 

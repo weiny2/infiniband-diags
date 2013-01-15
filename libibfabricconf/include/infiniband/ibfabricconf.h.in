@@ -91,6 +91,7 @@ char *ibfc_conf_get_name(ibfc_conf_t *conf);
 /* port */
 ibfc_port_t *ibfc_get_port(ibfc_conf_t *fabricconf, char *name, int p_num);
 char *ibfc_port_get_name(ibfc_port_t *port);
+int   ibfc_port_name_is_guid(ibfc_port_t *port);
 int   ibfc_port_get_port_num(ibfc_port_t *port);
 int   ibfc_port_get_port_ext_num(ibfc_port_t *port);
 ibfc_port_t *ibfc_port_get_remote(ibfc_port_t *port);

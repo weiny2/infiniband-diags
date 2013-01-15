@@ -1,55 +1,47 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE ibfabric>
 
-<ibConnections schemaVersion="1.0">
-	<ibSubnet name="test fabric" portGUID="0xDEADBEEF">
-		<property name="type">QSFP</property>
-		<chassis name="test chassis" model="QLogic_9240"></chassis>
-		<include>switch1</include>
-		<node name="SDR switch">
-			<port num="1"><remoteNode port="1" name="SDR node"/></port>
-		</node>
-		<node name="DDR switch" speed="DDR">
-			<port num="1"><remoteNode port="1" name="DDR node"/></port>
-		</node>
-		<node name="QDR switch" speed="QDR">
-			<port num="1"><remoteNode port="1" name="QDR node"/></port>
-		</node>
-		<node name="FDR switch" speed="FDR">
-			<port num="1"><remoteNode port="1" name="FDR node"/></port>
-		</node>
-		<node name="FDR10 switch" speed="FDR10">
-			<port num="1"><remoteNode port="1" name="FDR10 node"/></port>
-		</node>
-		<node name="EDR switch" speed="EDR">
-			<port num="1"><remoteNode port="1" name="EDR node"/></port>
-		</node>
-		<node name="1x switch" width="1x">
-			<port num="1"><remoteNode port="1" name="1x node"/></port>
-		</node>
-		<node name="4x switch" width="4x">
-			<port num="1"><remoteNode port="1" name="4x node"/></port>
-		</node>
-		<node name="8x switch" width="8x">
-			<port num="1"><remoteNode port="1" name="8x node"/></port>
-		</node>
-		<node name="12x switch" width="12x">
-			<port num="1"><remoteNode port="1" name="12x node"/></port>
-		</node>
-		<subfabric width="1x" speed="SDR">
-			<property name="color">blue</property>
-			<node name="1X SDR blue switch">
-				<port num="1"><remoteNode port="2" name="SDR blue node"/></port>
-			</node>
-		</subfabric>
-	</ibSubnet>
-	<ibSubnet name="test fabric2" subnetPrefix="fe80::0">
-		<node name="testSW">
-			<port num="1"><remoteNode port="1" name="test Node"/></port>
-		</node>
-	</ibSubnet>
-	<ibSubnet name="yet another" ca="mlx4_1" port="2">
-		<include>fabric_file</include>
-	</ibSubnet>
-	<include>full_subnet_file</include>
-</ibConnections>
+<ibfabric name="test fabric" schemaVersion="2.0">
+	<property name="type">QSFP</property>
+	<chassis name="test chassis" model="QLogic_9240"></chassis>
+	<include>switch1</include>
+	<linklist name="SDR switch">
+		<port num="1"><remote port="1" name="SDR node"/></port>
+	</linklist>
+	<linklist name="DDR switch" speed="DDR">
+		<port num="1"><remote port="1" name="DDR node"/></port>
+	</linklist>
+	<linklist name="QDR switch" speed="QDR">
+		<port num="1"><remote port="1" name="QDR node"/></port>
+	</linklist>
+	<linklist name="FDR switch" speed="FDR">
+		<port num="1"><remote port="1" name="FDR node"/></port>
+	</linklist>
+	<linklist name="FDR10 switch" speed="FDR10">
+		<port num="1"><remote port="1" name="FDR10 node"/></port>
+	</linklist>
+	<linklist name="EDR switch" speed="EDR">
+		<port num="1"><remote port="1" name="EDR node"/></port>
+	</linklist>
+	<linklist name="1x switch" width="1x">
+		<port num="1"><remote port="1" name="1x node"/></port>
+	</linklist>
+	<linklist name="4x switch" width="4x">
+		<port num="1"><remote port="1" name="4x node"/></port>
+	</linklist>
+	<linklist name="8x switch" width="8x">
+		<port num="1"><remote port="1" name="8x node"/></port>
+	</linklist>
+	<linklist name="12x switch" width="12x">
+		<port num="1"><remote port="1" name="12x node"/></port>
+	</linklist>
+	<linklist name="0xDEADBEEF" nameIsGUID="true">
+		<port num="1"><remote port="1" name="0xCAFEBABE" nameIsGUID="true"/></port>
+	</linklist>
+	<subfabric width="1x" speed="SDR">
+		<property name="color">blue</property>
+		<linklist name="1X SDR blue switch">
+			<port num="1"><remote port="2" name="SDR blue node"/></port>
+		</linklist>
+	</subfabric>
+</ibfabric>
