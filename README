@@ -20,3 +20,15 @@ Release notes v1.6.0 => 1.6.1
 
    1) bug fixes and code clean up
 
+TODO
+====
+
+* Port Selection could be smarter when directed routes are given.
+
+* Add "grep" output option for some tools like ibqueryerrors, saquery, ...
+
+* Modify "first port found" algorithm to skip Ethernet link ports when the
+  Management Classes they use are not supported on Ethernet.
+  This is further complicated by the intertwined use of libib[u]mad.
+
+
