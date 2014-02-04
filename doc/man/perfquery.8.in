@@ -143,12 +143,6 @@ the counters of the specified ports.  If the destination lid does not support
 the AllPortSelect flag, all ports will be iterated through to emulate
 AllPortSelect behavior.
 .TP
-.B \fB\-l, \-\-loop_ports\fP
-.sp
-If all ports are selected by the user (either through the \fB\-a\fP option
-or port 255) or multiple ports are specified iterate through each port rather
-than doing than aggregate operation.
-.TP
 .B \fB\-r, \-\-reset_after_read\fP
 .sp
 reset counters after read
@@ -295,10 +289,10 @@ perfquery \-x \-R 0x20 1   # reset extended performance counters of port 1 only
 perfquery \-R \-a 32       # reset performance counters of all ports
 perfquery \-R 32 2 0x0fff # reset only error counters of port 2
 perfquery \-R 32 2 0xf000 # reset only non\-error counters of port 2
+perfquery 32 1\-10        # read performance counters from lid 32, port 1\-10, output each port
 perfquery \-a 32 1\-10     # read performance counters from lid 32, port 1\-10, aggregate output
-perfquery \-l 32 1\-10     # read performance counters from lid 32, port 1\-10, output each port
+perfquery 32 1,4,8       # read performance counters from lid 32, port 1, 4, and 8, output each port
 perfquery \-a 32 1,4,8    # read performance counters from lid 32, port 1, 4, and 8, aggregate output
-perfquery \-l 32 1,4,8    # read performance counters from lid 32, port 1, 4, and 8, output each port
 .ft P
 .fi
 .SS AUTHOR
