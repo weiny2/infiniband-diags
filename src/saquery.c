@@ -805,16 +805,23 @@ static int get_lid_from_name(struct sa_handle * h, const char *name, uint16_t * 
 
 	ret = ENONET;
 	for (i = 0; i < result.result_cnt; i++) {
+		char *namecmp = NULL;
+
 		node_record = sa_get_query_rec(result.p_result_madw, i);
 		p_ni = &(node_record->node_info);
+
+		namecmp = remap_node_name(node_name_map,
+					  cl_ntoh64(node_record->node_info.node_guid),
+					  (char *)node_record->node_desc.description);
+
 		if (name
-		    && strncmp(name, (char *)node_record->node_desc.description,
-			       sizeof(node_record->node_desc.description)) ==
-		    0) {
+		    && strcmp(name, namecmp) == 0) {
 			*lid = cl_ntoh16(node_record->lid);
 			ret = 0;
+			free(namecmp);
 			break;
 		}
+		free(namecmp);
 	}
 	sa_free_result_mad(&result);
 	return ret;
